@@ -74,6 +74,9 @@ export function startRealtimeConnection() {
 }
 
 function connectRealtime() {
+  // Sécurité : ne pas créer de nouvelle connexion si déjà en cours
+  if (realtimeWs && (realtimeWs.readyState === WebSocket.CONNECTING || realtimeWs.readyState === WebSocket.OPEN)) return;
+
   const wsUrl = URL.replace('https://', 'wss://') + '/realtime/v1/websocket?apikey=' + KEY + '&vsn=1.0.0';
   realtimeWs = new WebSocket(wsUrl);
 
