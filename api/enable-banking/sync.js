@@ -5,7 +5,6 @@
 const crypto = require('crypto');
 
 const APP_ID       = process.env.ENABLEBANKING_APP_ID;
-const CERT_ID      = process.env.ENABLEBANKING_CERT_ID || APP_ID;
 const PRIVATE_KEY  = process.env.ENABLEBANKING_PRIVATE_KEY;
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://qvyxdpplabsbvjvpoubf.supabase.co';
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;

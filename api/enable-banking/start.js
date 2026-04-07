@@ -5,15 +5,15 @@
 const crypto = require('crypto');
 
 const APP_ID      = process.env.ENABLEBANKING_APP_ID;
-const CERT_ID     = process.env.ENABLEBANKING_CERT_ID || APP_ID;
 const PRIVATE_KEY = process.env.ENABLEBANKING_PRIVATE_KEY;
+// Le kid dans le JWT = l'App ID (Enable Banking génère la clé côté navigateur à la création)
 const BASE_URL    = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
   : 'http://localhost:3001';
 const REDIRECT_URI = `${BASE_URL}/api/enable-banking/callback`;
 
 function makeJWT() {
-  const header  = b64url(JSON.stringify({ typ: 'JWT', alg: 'RS256', kid: CERT_ID }));
+  const header  = b64url(JSON.stringify({ typ: 'JWT', alg: 'RS256', kid: APP_ID }));
   const now     = Math.floor(Date.now() / 1000);
   const payload = b64url(JSON.stringify({
     iss: 'enablebanking.com',

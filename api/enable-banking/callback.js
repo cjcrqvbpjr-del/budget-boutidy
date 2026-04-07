@@ -8,7 +8,6 @@
 const crypto = require('crypto');
 
 const APP_ID       = process.env.ENABLEBANKING_APP_ID;
-const CERT_ID      = process.env.ENABLEBANKING_CERT_ID || APP_ID;
 const PRIVATE_KEY  = process.env.ENABLEBANKING_PRIVATE_KEY;
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://qvyxdpplabsbvjvpoubf.supabase.co';
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
@@ -17,7 +16,7 @@ const APP_URL      = process.env.VERCEL_URL
   : 'http://localhost:3001';
 
 function makeJWT() {
-  const header  = b64url(JSON.stringify({ typ: 'JWT', alg: 'RS256', kid: CERT_ID }));
+  const header  = b64url(JSON.stringify({ typ: 'JWT', alg: 'RS256', kid: APP_ID }));
   const now     = Math.floor(Date.now() / 1000);
   const payload = b64url(JSON.stringify({
     iss: 'enablebanking.com',
