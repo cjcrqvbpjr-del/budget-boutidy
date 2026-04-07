@@ -5,6 +5,9 @@ import { state, sauvegarderParametre, modifierCharge, supprimerCharge, ajouterCh
 import { calculerBilan, fmt, fmtCourt } from '../budget.js';
 
 export function renderReglages() {
+  // Statut banque
+  if (typeof updateBankUI === 'function') updateBankUI();
+
   // Utilisateur actif
   qs('#regl-user-g').className = 'who-btn g' + (state.activeUser === 'G' ? ' active' : '');
   qs('#regl-user-a').className = 'who-btn a' + (state.activeUser === 'A' ? ' active' : '');

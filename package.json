@@ -1,0 +1,6 @@
+{
+  "name": "budget-boutidy",
+  "version": "1.0.0",
+  "description": "App budget partagée Geoffrey + Amandine",
+  "engines": { "node": ">=18" }
+}

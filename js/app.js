@@ -216,6 +216,70 @@ window.showToast = function(msg, duration = 2500) {
 // Expose showToast pour les autres modules
 window.closeModal = window.closeModal;
 
+// ── ENABLE BANKING ────────────────────────────────────────────
+window.connectBank = async function() {
+  try {
+    const r = await fetch('/api/enable-banking/start');
+    const data = await r.json();
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      showToast('Erreur connexion bancaire : ' + (data.error || 'inconnue'));
+    }
+  } catch (e) {
+    showToast('Erreur : ' + e.message);
+  }
+};
+
+window.syncBank = async function() {
+  const btn = document.getElementById('bank-sync-btn');
+  if (btn) btn.textContent = '⏳ Sync en cours...';
+  try {
+    const r = await fetch('/api/enable-banking/sync');
+    const data = await r.json();
+    if (data.ok) {
+      showToast(`✓ ${data.importees} transaction(s) importée(s), ${data.doublons} doublon(s)`, 3500);
+      await loadAll();
+    } else {
+      showToast('Erreur sync : ' + (data.error || 'inconnue'));
+    }
+  } catch (e) {
+    showToast('Erreur sync : ' + e.message);
+  } finally {
+    if (btn) btn.textContent = '🔄 Synchroniser maintenant';
+  }
+};
+
+// Gère le retour OAuth depuis Enable Banking
+function handleBankCallback() {
+  const params = new URLSearchParams(window.location.search);
+
+  if (params.has('bank_connected')) {
+    const importees    = params.get('importees') || 0;
+    const doublons     = params.get('doublons') || 0;
+    const reconciliees = params.get('reconciliees') || 0;
+    localStorage.setItem('bb_bank_connected', '1');
+    showToast(`🏦 Banque connectée — ${importees} transactions importées`, 4000);
+    // Nettoyer l'URL
+    window.history.replaceState({}, '', '/');
+  }
+
+  if (params.has('bank_error')) {
+    showToast('⚠️ Erreur bancaire : ' + params.get('bank_error'), 4000);
+    window.history.replaceState({}, '', '/');
+  }
+}
+
+function updateBankUI() {
+  const connected = localStorage.getItem('bb_bank_connected') === '1';
+  const label = document.getElementById('bank-status-label');
+  const btn   = document.getElementById('bank-btn');
+  const sync  = document.getElementById('bank-sync-btn');
+  if (label) label.textContent = connected ? '✅ Connecté' : 'Non connecté';
+  if (btn)   btn.textContent   = connected ? 'Reconnecter' : 'Connecter';
+  if (sync)  sync.style.display = connected ? 'flex' : 'none';
+}
+
 // ── INITIALISATION ────────────────────────────────────────────
 async function init() {
   // Appliquer le thème sauvegardé
@@ -227,6 +291,10 @@ async function init() {
 
   // Démarrer le Realtime (sync live)
   startRealtime();
+
+  // Gérer retour OAuth Enable Banking
+  handleBankCallback();
+  updateBankUI();
 
   // Afficher l'écran home par défaut
   goTo('home');
