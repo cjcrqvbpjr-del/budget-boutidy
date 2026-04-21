@@ -11,9 +11,7 @@ const APP_ID       = process.env.ENABLEBANKING_APP_ID;
 const PRIVATE_KEY  = process.env.ENABLEBANKING_PRIVATE_KEY;
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://qvyxdpplabsbvjvpoubf.supabase.co';
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
-const APP_URL      = process.env.VERCEL_URL
-  ? `https://${process.env.VERCEL_URL}`
-  : 'http://localhost:3001';
+const APP_URL      = process.env.APP_URL || 'http://localhost:3001';
 
 function makeJWT() {
   const header  = b64url(JSON.stringify({ typ: 'JWT', alg: 'RS256', kid: APP_ID }));
