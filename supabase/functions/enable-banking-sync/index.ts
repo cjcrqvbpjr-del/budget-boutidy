@@ -89,7 +89,8 @@ Deno.serve(async (req) => {
 
     let importees = 0, doublons = 0, reconciliees = 0;
 
-    for (const accountId of accounts) {
+    for (const account of accounts) {
+      const accountId = account.uid || account;
       const txRes = await fetch(
         `https://api.enablebanking.com/accounts/${accountId}/transactions?date_from=${dateDebut}&date_to=${dateFin}`,
         { headers: ebHeaders() }

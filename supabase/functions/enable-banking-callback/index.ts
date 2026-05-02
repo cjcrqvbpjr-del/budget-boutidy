@@ -136,6 +136,8 @@ Deno.serve(async (req) => {
     const session = await sessionRes.json();
     const sessionId = session.session_id;
     const accounts = session.accounts || [];
+    console.log('[EB] session_id:', sessionId);
+    console.log('[EB] accounts:', JSON.stringify(accounts));
 
     // 2. Sauvegarder le session_id
     await fetch(`${SUPABASE_URL}/rest/v1/parametres`, {
@@ -154,7 +156,8 @@ Deno.serve(async (req) => {
 
     let totalImportees = 0, totalDoublons = 0, totalReconciliees = 0;
 
-    for (const accountId of accounts) {
+    for (const account of accounts) {
+      const accountId = account.uid || account;
       const txRes = await fetch(
         `https://api.enablebanking.com/accounts/${accountId}/transactions?date_from=${dateDebut}&date_to=${dateFin}`,
         { headers: ebHeaders() }
@@ -162,6 +165,7 @@ Deno.serve(async (req) => {
       if (!txRes.ok) continue;
 
       const txData = await txRes.json();
+      console.log('[EB] transactions pour', accountId, ':', txData.transactions?.length, 'statut fetch:', txRes.status);
       const transactions = (txData.transactions || [])
         .map((t: any) => ({
           date: t.booking_date || t.value_date,
