@@ -82,16 +82,23 @@ async function importTransactions(
     if ((await existR.json()).length > 0) { doublons++; continue; }
 
     // 2. Réconciliation charge fixe (dépenses) ?
+    // Critère 1 : montant dans ±15% du montant prévu
+    // Critère 2 (fallback) : libellé contient les 5 premiers chars du nom de la charge
     let chargeFixeId = null;
     if (tx.montant < 0) {
+      const absM = Math.abs(tx.montant);
+      const lib  = tx.libelle.toLowerCase();
       for (const charge of chargesFixes) {
-        const prevu = Number(charge.montant_prevu || 0);
-        if (prevu > 0 && Math.abs(Math.abs(tx.montant) - prevu) / prevu <= 0.05) {
+        const prevu   = Number(charge.montant_prevu || 0);
+        const byAmount = prevu > 0 && Math.abs(absM - prevu) / prevu <= 0.15;
+        const byName   = charge.nom && lib.includes(charge.nom.toLowerCase().slice(0, 5));
+        if (byAmount || byName) {
           await fetch(`${SUPABASE_URL}/rest/v1/charges_fixes?id=eq.${charge.id}`, {
             method: 'PATCH', headers: sbHeaders(),
             body: JSON.stringify({ montant_reel: tx.montant }),
           });
-          await fetch(`${SUPABASE_URL}/rest/v1/transactions?charge_fixe_id=eq.${charge.id}&periode=eq.${periode}&source=eq.auto`,
+          // Supprimer tout doublon existant pour cette charge dans la période
+          await fetch(`${SUPABASE_URL}/rest/v1/transactions?charge_fixe_id=eq.${charge.id}&periode=eq.${periode}&hash_doublon=neq.${hash}`,
             { method: 'DELETE', headers: sbHeaders() }
           );
           chargeFixeId = charge.id;

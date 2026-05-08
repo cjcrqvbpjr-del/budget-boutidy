@@ -130,16 +130,24 @@ Deno.serve(async (req) => {
         const existR = await fetch(`${SUPABASE_URL}/rest/v1/transactions?hash_doublon=eq.${hash}&limit=1`, { headers: sbHeaders() });
         if ((await existR.json()).length > 0) { doublons++; continue; }
 
+        // Réconciliation charge fixe
+        // Critère 1 : montant dans ±15% du montant prévu
+        // Critère 2 (fallback) : libellé contient le nom de la charge (insensible casse)
         let chargeFixeId = null;
         if (montant < 0) {
+          const absM = Math.abs(montant);
+          const lib  = libelle.toLowerCase();
           for (const charge of chargesFixes) {
-            const prevu = Number(charge.montant_prevu || 0);
-            if (prevu > 0 && Math.abs(Math.abs(montant) - prevu) / prevu <= 0.05) {
+            const prevu  = Number(charge.montant_prevu || 0);
+            const byAmount = prevu > 0 && Math.abs(absM - prevu) / prevu <= 0.15;
+            const byName   = charge.nom && lib.includes(charge.nom.toLowerCase().slice(0, 5));
+            if (byAmount || byName) {
               await fetch(`${SUPABASE_URL}/rest/v1/charges_fixes?id=eq.${charge.id}`, {
                 method: 'PATCH', headers: sbHeaders(),
                 body: JSON.stringify({ montant_reel: montant }),
               });
-              await fetch(`${SUPABASE_URL}/rest/v1/transactions?charge_fixe_id=eq.${charge.id}&periode=eq.${periode}&source=eq.auto`,
+              // Supprimer un doublon éventuel de la même période (même charge_fixe_id)
+              await fetch(`${SUPABASE_URL}/rest/v1/transactions?charge_fixe_id=eq.${charge.id}&periode=eq.${periode}&hash_doublon=neq.${hash}`,
                 { method: 'DELETE', headers: sbHeaders() }
               );
               chargeFixeId = charge.id;
