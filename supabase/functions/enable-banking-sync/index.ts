@@ -1,5 +1,6 @@
 // ── Supabase Edge Function: enable-banking-sync ───────────────
 // Sync manuelle : récupère les 7 derniers jours de transactions
+// v2 : réconciliation ±15% + matching par nom, normalizePem RS256
 
 import jwt from "npm:jsonwebtoken@9";
 import { createHash } from "node:crypto";
