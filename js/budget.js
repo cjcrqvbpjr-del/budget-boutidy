@@ -72,10 +72,10 @@ export function calculerReport(prevTransactions, parametres, chargesFixes, compt
   const epargne = comptesEpargne
     .reduce((s, c) => s + Number(c.versement_mensuel || 0), 0);
 
-  // Uniquement les dépenses variables réelles (type='depense') de la période précédente
-  const depensesPrev = prevTransactions
+  // Dépenses variables de la période précédente (remboursements déduits)
+  const depensesPrev = Math.max(0, prevTransactions
     .filter(t => t.type === 'depense')
-    .reduce((s, t) => s + Math.abs(Number(t.montant)), 0);
+    .reduce((s, t) => s - Number(t.montant), 0));
 
   return revenus - totalChargesFixes - epargne - depensesPrev;
 }
@@ -100,10 +100,10 @@ export function calculerBilan(transactions, parametres, chargesFixes, comptesEpa
   const budgetBrut    = report + revenus - totalChargesFixes - totalEpargne;
   const budgetVariable = budgetBrut; // Peut être négatif si report très négatif
 
-  // Dépenses variables uniquement (charge_fixe déjà dans totalChargesFixes)
-  const depenses = transactions
+  // Dépenses variables (montant négatif = dépense, positif = remboursement)
+  const depenses = Math.max(0, transactions
     .filter(t => t.type === 'depense')
-    .reduce((s, t) => s + Math.abs(Number(t.montant)), 0);
+    .reduce((s, t) => s - Number(t.montant), 0)); // -(-337) = +337, -(+283) = -283
 
   const reste = budgetVariable - depenses;
 
