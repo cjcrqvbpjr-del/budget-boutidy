@@ -107,8 +107,8 @@ export function calculerBilan(transactions, parametres, chargesFixes, comptesEpa
 
   const reste = budgetVariable - depenses;
 
-  // Pourcentage basé sur le budget mensuel hors report
-  const budgetRef = Math.max(1, revenus - totalChargesFixes - totalEpargne);
+  // Pourcentage basé sur le budget total (report inclus)
+  const budgetRef = Math.max(1, budgetVariable);
   const pct = Math.min(100, Math.round(depenses / budgetRef * 100));
 
   // Reste par jour jusqu'à la fin de période
